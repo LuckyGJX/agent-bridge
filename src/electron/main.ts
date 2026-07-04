@@ -66,7 +66,7 @@ function createWindow(): void {
   waitForConfigUi(bridgePort());
 
   mainWindow.on('close', (event) => {
-    if (tray) {
+    if (!isQuitting && tray) {
       event.preventDefault();
       mainWindow?.hide();
     }
@@ -105,7 +105,7 @@ function createTray(): void {
     {
       label: '退出',
       click: () => {
-        app.quit();
+        quitApp();
       },
     },
   ]);
@@ -118,6 +118,22 @@ function createTray(): void {
       mainWindow.focus();
     }
   });
+}
+
+function stopBridgeProcess(): void {
+  if (!bridgeProcess) return;
+  bridgeProcess.kill();
+  bridgeProcess = null;
+}
+
+function quitApp(): void {
+  isQuitting = true;
+  stopBridgeProcess();
+  if (tray) {
+    tray.destroy();
+    tray = null;
+  }
+  app.quit();
 }
 
 function startBridge(): void {
@@ -150,8 +166,7 @@ function startBridge(): void {
 
 function restartBridge(): void {
   if (bridgeProcess) {
-    bridgeProcess.kill();
-    bridgeProcess = null;
+    stopBridgeProcess();
   }
   setTimeout(() => startBridge(), 500);
 }
@@ -164,17 +179,14 @@ app.whenReady().then(() => {
 
 app.on('window-all-closed', () => {
   // macOS 不退出，保持托盘运行
-  if (process.platform !== 'darwin') {
+  if (isQuitting || process.platform !== 'darwin') {
     app.quit();
   }
 });
 
 app.on('before-quit', () => {
   isQuitting = true;
-  if (bridgeProcess) {
-    bridgeProcess.kill();
-    bridgeProcess = null;
-  }
+  stopBridgeProcess();
 });
 
 app.on('activate', () => {

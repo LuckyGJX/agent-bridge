@@ -161,7 +161,7 @@ function main(): void {
   const logger = new Logger(currentConfig);
 
   logger.info('========================================');
-  logger.info('  Agent Bridge v1.1.0');
+  logger.info('  Agent Bridge v1.1.1');
   logger.info('  Local Agents <=> Cloud Gateway');
   logger.info('  Backends: OpenClaw + QwenPaw');
   logger.info('========================================');
