@@ -1,5 +1,6 @@
 import WebSocket from 'ws';
 import { EventEmitter } from 'events';
+import { rootCertificates } from 'node:tls';
 import { BridgeConfig, BridgeMessage, BridgeState, CloudMessage, ConnectionStatus, RegisterMessage } from './types';
 import { Logger } from './logger';
 import { AgentRouter } from './router';
@@ -50,6 +51,7 @@ export class WebSocketManager extends EventEmitter {
 
     try {
       this.ws = new WebSocket(this.config.cloud.wsUrl, {
+        ca: [...rootCertificates],
         headers: {
           Authorization: `Bearer ${this.config.cloud.token}`,
           'x-bridge-id': this.state.bridgeId!,
